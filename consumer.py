@@ -5,6 +5,56 @@ from time import sleep
 import sys
 import logging
 
+
+
+
+# code to do this 
+import boto3
+import json
+import sys
+import logging
+import time
+import os
+import random
+import string
+
+from botocore.exceptions import ClientError
+
+# Create SQS client
+sqs = boto3.client('sqs')
+
+# Create Docker client
+docker = boto3.client('docker')
+
+# Create docker file
+dockerfile = open("Dockerfile", "w")
+#specifies your runtime environment
+dockerfile.write("FROM python:3.7-slim\n")
+
+#copies your program into the container
+dockerfile.write("COPY . /app\n")
+
+#specifies a command that will run your program
+dockerfile.write("CMD [\"python\", \"consumer.py\"]\n")
+
+#sets the working directory for any RUN, CMD, ENTRYPOINT, COPY and ADD instructions that follow it in the Dockerfile
+dockerfile.write("WORKDIR /app\n")
+
+#retrieve Widget Requests from the SQS queue. The user should be able to specify the name of queue on the command line.
+queue_url = os.environ['AWS_QUEUE_URL']
+location = os.environ['AWS_LOCATION']
+location_name = os.environ['AWS_LOCATION_NAME']
+s3_bucket = os.environ['AWS_S3_BUCKET']
+dynamodb_table = os.environ['AWS_DYNAMODB_TABLE']
+
+
+
+
+
+# Create S3 client
+client  = boto3.client('s3')
+
+# Create S3 resource
 s3 = boto3.resource('s3')
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 table = dynamodb.Table("widgets")
@@ -112,3 +162,12 @@ while k == 2:
     except KeyError:
         logging.debug("Empty Bucket")
         sleep(0.1)
+        
+        
+# 1.Why is it possible that Update and Delete Widget Requests may fail, even when you were 
+# running just one Consumer? 
+# 2. How would this possible behavior impact the design of distributed applications that use 
+# queues?
+
+#Answer to 1 is that the consumer may not be able to process the request in time and the request may be timed out.
+#Answer it could impact the design of distributed applications that use queues by having the consumer process the request in time and not have it time out and using the aws sqs long polling feature to reduce the number of empty responses.
