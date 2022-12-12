@@ -48,9 +48,30 @@ s3_bucket = os.environ['AWS_S3_BUCKET']
 dynamodb_table = os.environ['AWS_DYNAMODB_TABLE']
 
 
-
-
-
+def create_docker_image():
+    # Create docker image
+    docker.build(path='.', tag='consumer')
+    
+    
+def create_docker_container():
+    # Create docker container
+    docker.create_container(image='consumer', command='python consumer.py ' + s3_bucket + ' ' + location + ' ' + location_name, name='consumer')
+    
+    
+def start_docker_container():
+    # Start docker container
+    docker.start(container='consumer')
+    
+    
+def stop_docker_container():
+    # Stop docker container
+    docker.stop(container='consumer')
+    
+    
+def delete_docker_container():
+    # Delete docker container
+    docker.remove_container(container='consumer', force=True)
+    
 # Create S3 client
 client  = boto3.client('s3')
 
